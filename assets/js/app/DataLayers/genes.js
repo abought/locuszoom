@@ -57,6 +57,13 @@ LocusZoom.DataLayers.add("genes", function(layout){
     this.transcript_idx = 0;
 
     /**
+     * Track how many rows of genes we are showing, so we know when to resize the panel
+     * @type {number}
+     * @private
+     */
+    this._expected_tracks = 0;
+
+    /**
      * An internal counter for the number of tracks in the data layer. Used as an internal counter for looping
      *   over positions / assignments
      * @protected
@@ -96,6 +103,8 @@ LocusZoom.DataLayers.add("genes", function(layout){
                 return 0;
             }
         };
+
+        this._expected_tracks = this.tracks;
 
         // Reinitialize some metadata
         this.tracks = 1;
@@ -450,6 +459,13 @@ LocusZoom.DataLayers.add("genes", function(layout){
         // Remove old elements as needed
         selection.exit().remove();
 
+        // The panel should always be tall enough to accommodate the largest number of rows it has seen.
+        //  (it will grow if it sees a lot of genes, but not shrink when you pan, to minimize bouncy resizing)
+        // FIXME HACK: height change triggers a re-render. This is here to prevent an infinite loop of re-renders.
+        if (this._expected_tracks < this.tracks) {
+            var target_height = this.tracks * this.getTrackHeight();
+            this.parent.scaleHeightToData(target_height);
+        }
     };
 
     /**
