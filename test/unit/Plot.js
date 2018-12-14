@@ -499,7 +499,7 @@ describe('LocusZoom.Plot', function() {
 
     describe('subscribeToData', function() {
         beforeEach(function() {
-            this.sandbox = sinon.sandbox.create();
+            this.sandbox = sinon.createSandbox();
             var layout = {
                 panels: [ { id: 'panel0' } ]
             };

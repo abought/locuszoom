@@ -77,7 +77,7 @@ describe('LocusZoom.ext.DynamicUrls', function() {
             this.plot = new LocusZoom.Plot('plot', null, {state: { chr: 1, start: 1000, end: 5000 }});
 
             // jsdom doesn't fully implement navigation, so we will check the act of changing URL instead of the result
-            this.sandbox = sinon.sandbox.create();
+            this.sandbox = sinon.createSandbox();
 
             this.historySpy = this.sandbox.stub(history, 'replaceState'); // We can't set init query string, else this would spy on pushState
         });
@@ -140,7 +140,7 @@ describe('LocusZoom.ext.DynamicUrls', function() {
             this.plot = new LocusZoom.Plot('plot', null, {state: { chr: 1, start: 1000, end: 5000 }});
 
             // jsdom doesn't fully implement navigation, so we will check the act of changing URL instead of the result
-            this.sandbox = sinon.sandbox.create();
+            this.sandbox = sinon.createSandbox();
         });
 
         it('calls a custom deserialization callback when appropriate', function() {

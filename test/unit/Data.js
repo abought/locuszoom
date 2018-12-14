@@ -266,7 +266,7 @@ describe('LocusZoom Data', function() {
 
         describe('Source.getData', function() {
             beforeEach(function() {
-                this.sandbox = sinon.sandbox.create();
+                this.sandbox = sinon.createSandbox();
             });
 
             it('dependentSource skips making a request if previous sources did not add data to chain.body', function() {
@@ -306,7 +306,7 @@ describe('LocusZoom Data', function() {
             // Parse response is a wrapper for a set of helper methods. Test them individually, and combined.
 
             beforeEach(function() {
-                this.sandbox = sinon.sandbox.create();
+                this.sandbox = sinon.createSandbox();
             });
 
             afterEach(function() {
@@ -726,7 +726,7 @@ describe('LocusZoom Data', function() {
 
     describe('LocusZoom Data.ConnectorSource', function() {
         beforeEach(function () {
-            this.sandbox = sinon.sandbox.create();
+            this.sandbox = sinon.createSandbox();
 
             // Create a source that internally looks for data as "first" from the specified
             this.basic_config = { sources: { first: 'a_source', second: 'b_source' } };
