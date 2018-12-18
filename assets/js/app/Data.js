@@ -544,7 +544,7 @@ LocusZoom.Data.Source.prototype.parseResponse = function(resp, chain, fields, ou
 
     var self = this;
     // Perform the 4 steps of parsing the payload and return a combined chain object
-    return Q.when(self.normalizeResponse(json.data || json))
+    return Q.when(self.normalizeResponse((json || {}).data || json))
         .then(function(standardized) {
             // Perform calculations on the data from just this source
             return Q.when(self.annotateData(standardized, chain));
@@ -668,6 +668,13 @@ LocusZoom.Data.AssociationSource.prototype.normalizeResponse = function (data) {
     }
     return data;
 };
+
+// FIXME: Definitely don't check this awful ungodly hack into VCS. Goodness dearie me no!!
+LocusZoom.Data.AssociationSource.prototype.annotateData = function (records, chain) {
+    records[0]['log_pvalue'] = Infinity;
+    return records;
+};
+
 
 /**
  * Data Source for LD Data, as fetched from the LocusZoom API server (or compatible)

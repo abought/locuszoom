@@ -96,12 +96,21 @@ LocusZoom.Panel = function(layout, parent) {
     /** @member {d3.scale} */
     this.y2_scale = null;
 
-    /** @member {d3.extent} */
+
+    // Axis extents used in rendering. For y-values, infinity values may be possible. Store both FULL and FINITE-VALUE
+    //  extents to enable smarter axis scaling.
+    /** @member {Number[]} */
     this.x_extent  = null;
-    /** @member {d3.extent} */
+    /** @member {Number[]} */
+    this.x_extent_finite = null;
+    /** @member {Number[]} */
     this.y1_extent = null;
-    /** @member {d3.extent} */
+    /** @member {Number[]} */
+    this.y1_extent_finite = null;
+    /** @member {Number[]} */
     this.y2_extent = null;
+    /** @member {Number[]} */
+    this.y2_extent_finite = null;
 
     /** @member {Number[]} */
     this.x_ticks  = [];
@@ -798,14 +807,23 @@ LocusZoom.Panel.prototype.generateExtents = function() {
         // If defined and not decoupled, merge the x extent of the data layer with the panel's x extent
         if (data_layer.layout.x_axis && !data_layer.layout.x_axis.decoupled) {
             this.x_extent = d3.extent((this.x_extent || []).concat(data_layer.getAxisExtent('x')));
+            // TODO: this field is mainly for compatibility (all tick generators based on finite extent). Currently,
+            //  x axis does not have any spwecial behavior to handle infinite values.
+            this.x_extent_finite = this.x_extent;
         }
 
         // If defined and not decoupled, merge the y extent of the data layer with the panel's appropriate y extent
         if (data_layer.layout.y_axis && !data_layer.layout.y_axis.decoupled) {
             var y_axis = 'y' + data_layer.layout.y_axis.axis;
-            this[y_axis + '_extent'] = d3.extent((this[y_axis + '_extent'] || []).concat(data_layer.getAxisExtent('y')));
-        }
+            var full_extent = d3.extent((this[y_axis + '_extent'] || []).concat(data_layer.getAxisExtent('y')));
+            this[y_axis + '_extent'] = full_extent;
 
+            var finite_extent = full_extent;
+            if (full_extent.some(function(item) { return !isFinite(item); })) {
+                finite_extent = d3.extent((this[y_axis + '_extent_finite'] || []).concat(data_layer.getAxisExtent('y', true)));
+            }
+            this[y_axis + '_extent_finite'] = finite_extent;
+        }
     }
 
     // Override x_extent from state if explicitly defined to do so
@@ -870,7 +888,15 @@ LocusZoom.Panel.prototype.generateTicks = function(axis) {
 
     // If no other configuration is provided, attempt to generate ticks from the extent
     if (this[axis + '_extent']) {
-        return LocusZoom.prettyTicks(this[axis + '_extent'], 'both');
+        var base_ticks = LocusZoom.prettyTicks(this[axis + '_extent_finite'], 'both');
+        // Append ticks for +/- infinity if necessary
+        if (this[axis + '_extent'][0] === -Infinity) {
+            base_ticks.shift(-Infinity);
+        }
+        if (this[axis + '_extent'][1] === Infinity) {
+            base_ticks.push(Infinity);
+        }
+        return base_ticks;
     }
     return [];
 };
@@ -952,6 +978,7 @@ LocusZoom.Panel.prototype.render = function() {
     if (this.parent.interaction.panel_id && (this.parent.interaction.panel_id === this.id || this.parent.interaction.linked_panel_ids.indexOf(this.id) !== -1)) {
         var anchor, scalar = null;
         if (this.parent.interaction.zooming && typeof this.x_scale == 'function') {
+            // TODO: Zooming should use the finite extent size when zooming in. For zooming out, a bit more thought is needed.
             var current_extent_size = Math.abs(this.x_extent[1] - this.x_extent[0]);
             var current_scaled_extent_size = Math.round(this.x_scale.invert(ranges.x_shifted[1])) - Math.round(this.x_scale.invert(ranges.x_shifted[0]));
             var zoom_factor = this.parent.interaction.zooming.scale;
@@ -985,6 +1012,7 @@ LocusZoom.Panel.prototype.render = function() {
                 break;
             case 'y1_tick':
             case 'y2_tick':
+                // Dragging on y axis ticks implements a zoom in/out behavior
                 var y_shifted = 'y' + this.parent.interaction.dragging.method[1] + '_shifted';
                 if (d3.event && d3.event.shiftKey) {
                     ranges[y_shifted][0] = this.layout.cliparea.height + this.parent.interaction.dragging.dragged_y;
@@ -1003,20 +1031,44 @@ LocusZoom.Panel.prototype.render = function() {
     ['x', 'y1', 'y2'].forEach(function(axis) {
         if (!this[axis + '_extent']) { return; }
 
-        // Base Scale
+        // Base Scale: this is defined so we can calculate the new start/end values on the axis after zoom is complete
         this[axis + '_scale'] = d3.scale.linear()
-            .domain(this[axis + '_extent'])
+            .domain(this[axis + '_extent_finite'])
             .range(ranges[axis + '_shifted']);
 
         // Shift the extent
-        this[axis + '_extent'] = [
+        this[axis + '_extent_finite'] = [
             this[axis + '_scale'].invert(ranges[axis][0]),
             this[axis + '_scale'].invert(ranges[axis][1])
         ];
 
-        // Finalize Scale
+        // If infinity values are present in the data, generate a "multilinear" scale by modifying the domain and range.
+        //  Specifically: we create a multidomain scale in d3 (infinity values resolve as "one end of the range, padded
+        //  away from all other data")
+        // When a user zooms in, the datalayer sets floor/ceiling values, and reports that rather than true extent of
+        //  data. Hence, if there is an infinity value, it is the intended axis range.
+        var data_domain = this[axis + '_extent_finite'].slice();
+        var full_domain = this[axis + '_extent'];
+        var final_range = ranges[axis];
+        var span_final = final_range[0] - final_range[1];
+
+        var clamp = false;
+        if (full_domain[0] === -Infinity) {
+            final_range.splice(0, 1, span_final, 0.9 * span_final);
+            data_domain.shift(-Infinity);
+            clamp = true;
+        }
+        if (full_domain[1] === Infinity) {
+            final_range.splice(span_final.length - 1, 1, 0, 0.1 * span_final);
+            data_domain.push(Infinity);
+            clamp = true;
+        }
+
+        // Finalize axis scale
         this[axis + '_scale'] = d3.scale.linear()
-            .domain(this[axis + '_extent']).range(ranges[axis]);
+            .domain(data_domain)
+            .range(final_range)
+            .clamp(clamp);
 
         // Render axis (and generate ticks as needed)
         this.renderAxis(axis);
@@ -1134,7 +1186,10 @@ LocusZoom.Panel.prototype.renderAxis = function(axis) {
     })(this[axis + '_ticks']);
 
     // Initialize the axis; set scale and orientation
-    this[axis + '_axis'] = d3.svg.axis().scale(this[axis + '_scale']).orient(axis_params[axis].orientation).tickPadding(3);
+    this[axis + '_axis'] = d3.svg.axis()
+        .scale(this[axis + '_scale'])
+        .orient(axis_params[axis].orientation)
+        .tickPadding(3);
 
     // Set tick values and format
     if (ticksAreAllNumbers) {
@@ -1184,6 +1239,7 @@ LocusZoom.Panel.prototype.renderAxis = function(axis) {
 
     // Attach interactive handlers to ticks as needed
     ['x', 'y1', 'y2'].forEach(function(axis) {
+        // TODO: Here is where the zoom-on-drag y axis behavior is implemented
         if (this.layout.interaction['drag_' + axis + '_ticks_to_scale']) {
             var namespace = '.' + this.parent.id + '.' + this.id + '.interaction.drag';
             var tick_mouseover = function() {

@@ -199,6 +199,25 @@ describe('LocusZoom.DataLayer', function() {
         });
     });
 
+    describe('Determining data extent', function () {
+        before(function() {
+            this.data = [{afield: 1}, {afield: NaN}, {afield: Infinity}, {afield:2}, {afield: -Infinity}];
+            this.axis_config = {field: 'afield'};
+        });
+
+        it('fetches full extent', function () {
+            var layer = new LocusZoom.DataLayer();
+            var extent = layer._getDataExtent(this.data, this.axis_config, false);
+            assert.deepEqual(extent, [-Infinity, Infinity]);
+        });
+
+        it('fetches only the finite extent', function () {
+            var layer = new LocusZoom.DataLayer();
+            var extent = layer._getDataExtent(this.data, this.axis_config, true);
+            assert.deepEqual(extent, [1, 2]);
+        });
+    });
+
     describe('Extent generation', function() {
         it('has a method to generate an extent function for any axis', function() {
             this.datalayer = new LocusZoom.DataLayer({ id: 'test' });

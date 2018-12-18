@@ -358,23 +358,29 @@ LocusZoom.DataLayer.prototype.resolveScalableParameter = function(layout, data) 
  *   (eg confidence intervals in a forest plot)
  * @param data
  * @param axis_config The configuration object for the specified axis.
+ * @param {boolean} [only_finite=false] Only fetch extent of finite values (excluding Infinity or NaN)
  * @returns {Array} [min, max] without any padding applied
  * @private
  */
-LocusZoom.DataLayer.prototype._getDataExtent = function(data, axis_config) {
+LocusZoom.DataLayer.prototype._getDataExtent = function(data, axis_config, only_finite) {
+    only_finite = only_finite || false;
     data = data || this.data;
     // By default this depends only on a single field.
     return d3.extent(data, function (d) {
         var f = new LocusZoom.Data.Field(axis_config.field);
-        return +f.resolve(d);
+        var value = +f.resolve(d);
+        // Optionally filter d3.extent ignores NaNs
+        return (!only_finite || isFinite(value)) ? value : NaN;
     });
 };
 
 /**
  * Generate dimension extent function based on layout parameters
  * @param {('x'|'y')} dimension
+ * @param {boolean} [only_finite=false] Only fetch extent of finite values (excluding Infinity or NaN)
  */
-LocusZoom.DataLayer.prototype.getAxisExtent = function(dimension) {
+LocusZoom.DataLayer.prototype.getAxisExtent = function(dimension, only_finite) {
+    only_finite = only_finite || false;
 
     if (['x', 'y'].indexOf(dimension) === -1) {
         throw new Error('Invalid dimension identifier passed to LocusZoom.DataLayer.getAxisExtent()');
@@ -397,7 +403,7 @@ LocusZoom.DataLayer.prototype.getAxisExtent = function(dimension) {
             data_extent = axis_layout.min_extent || [];
             return data_extent;
         } else {
-            data_extent = this._getDataExtent(this.data, axis_layout);
+            data_extent = this._getDataExtent(this.data, axis_layout, only_finite);
 
             // Apply upper/lower buffers, if applicable
             var original_extent_span = data_extent[1] - data_extent[0];
