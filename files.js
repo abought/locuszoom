@@ -24,6 +24,7 @@ var test_suite = [
 // NOTE: Order of inclusion is important!
 var app_build = [
     "./assets/js/app/LocusZoom.js",
+    "./assets/js/app/Util.js",
     "./assets/js/app/Layouts.js",
     "./assets/js/app/DataLayer.js",
     "./assets/js/app/DataLayers/**/*.js",

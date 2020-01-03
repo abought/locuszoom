@@ -781,6 +781,7 @@ LocusZoom.Dashboard.Component.Button = function(parent) {
 
 /**
  * Renders arbitrary text with title formatting
+ *
  * @class LocusZoom.Dashboard.Components.title
  * @augments LocusZoom.Dashboard.Component
  * @param {object} layout
@@ -806,6 +807,7 @@ LocusZoom.Dashboard.Components.add('title', function(layout) {
 
 /**
  * Renders text to display the current dimensions of the plot. Automatically updated as plot dimensions change
+ *
  * @class LocusZoom.Dashboard.Components.dimensions
  * @augments LocusZoom.Dashboard.Component
  */
