@@ -19,22 +19,18 @@ describe('Coordinate coalescing', function () {
             { x: 9, y: 350},  // Significant hit
         ];
     });
-    describe('count child nodes', function () {
-        it('only counts leaf nodes, not internal members', function () {
-            var qt = LocusZoom.Util.make_quadtree(this.sample_data, 'x', 'y');
-            var count = qt.nodes.reduce(function(acc, node) { return LocusZoom.Util.count_children(node) + acc; }, 0);
-            assert.equal(count, this.sample_data.length);
-        });
-    });
-    describe('coalesce_qt', function () {
+    describe('coalesce_points', function () {
         it('collapses insignificant points together', function () {
-            var qt = LocusZoom.Util.make_quadtree(this.sample_data, 'x', 'y');
             var combined = LocusZoom.Util.coalesce_points(
-                qt,
+                this.sample_data,
+                'x',
+                'y',
                 3, -Infinity, Infinity,
                 Infinity, 0, 1
             );
             assert.equal(combined.length, 6);
         });
+
+        // TODO: Add another test, where ygap is also tunable. Adjust sample data to check for this.
     });
 });
