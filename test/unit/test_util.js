@@ -27,7 +27,7 @@ describe('Coordinate coalescing', function () {
             return item;
         }
 
-        it('collapses insignificant points together (x gap = 3, any y in cutoff)', function () {
+        it('handles wide spans for any y within bounds', function () {
             var actual = LocusZoom.Util.coalesce_points(
                 this.sample_data,
                 'x',
@@ -35,7 +35,6 @@ describe('Coordinate coalescing', function () {
                 3, -Infinity, Infinity,
                 Infinity, 0, 1
             );
-            assert.equal(actual.length, 6);
 
             actual = actual.map(_numeric_to_fixed);
             var expected = [
@@ -46,31 +45,78 @@ describe('Coordinate coalescing', function () {
                 { x: '7.50000', y: '0.50000', lz_weight: '2.00000' },
                 { x: '9.00000', y: '350.00000' }
             ];
+            // assert.equal(actual.length, expected.length);
             assert.deepStrictEqual(actual, expected, 'Specified items are present');
         });
 
-        it.skip('collapses insignificant points together (x gap = 1, any y in cutoff)', function () {
-            var combined = LocusZoom.Util.coalesce_points(
+        it('handles narrow spans with y bounds', function () {
+            var actual = LocusZoom.Util.coalesce_points(
                 this.sample_data,
                 'x',
                 'y',
                 1, -Infinity, Infinity,
                 Infinity, 0, 1
             );
-            assert.equal(combined.length, 6);
-            assert.equal(combined.map(_numeric_to_fixed), [], 'Specified items are present');
+            actual = actual.map(_numeric_to_fixed);
+            var expected = [
+                { x: '0.50000', y: '0.70000', lz_weight: '2.00000' },
+                { x: '2.00000', y: '0.99900' },
+                { x: '3.00000', y: '7.40000' },
+                { x: '4.50000', y: '0.02550', lz_weight: '2.00000' },
+                { x: '6.00000', y: '128.00000' },
+                { x: '7.50000', y: '0.50000', lz_weight: '2.00000' },
+                { x: '9.00000', y: '350.00000' }
+            ];
+
+            // assert.equal(actual.length, expected.length);
+            assert.deepStrictEqual(actual, expected, 'Specified items are present');
         });
 
-        it.skip('collapses insignificant points together (x and y gap specified)', function () {
-            var combined = LocusZoom.Util.coalesce_points(
+        it('gap is determined by absolute distance, not nearest point', function () {
+            // For points A, B, and C, the gap is determined by A-C, not (synthetic point A-B)-C
+            var actual = LocusZoom.Util.coalesce_points(
+                this.sample_data,
+                'x',
+                'y',
+                1.75, -Infinity, Infinity,  // From sample data: verify that x = 0.5 and x = 2 don't combine
+                Infinity, 0, 1
+            );
+            actual = actual.map(_numeric_to_fixed);
+            var expected = [
+                { x: '0.50000', y: '0.70000', lz_weight: '2.00000' },
+                { x: '2.00000', y: '0.99900' },
+                { x: '3.00000', y: '7.40000' },
+                { x: '4.50000', y: '0.02550', lz_weight: '2.00000' },
+                { x: '6.00000', y: '128.00000' },
+                { x: '7.50000', y: '0.50000', lz_weight: '2.00000' },
+                { x: '9.00000', y: '350.00000' }
+            ];
+
+            // assert.equal(actual.length, expected.length);
+            assert.deepStrictEqual(actual, expected, 'Specified items are present');
+        });
+
+        it('handles wide spans, and considers how close y values are', function () {
+            var actual = LocusZoom.Util.coalesce_points(
                 this.sample_data,
                 'x',
                 'y',
                 3, -Infinity, Infinity,
                 0.5, 0, 1.0
             );
-            assert.equal(combined.length, 7);
-            assert.equal(combined.map(_numeric_to_fixed), [], 'Specified items are present');
+
+            actual = actual.map(_numeric_to_fixed);
+            var expected = [
+                { x: '1.00000', y: '0.79967', lz_weight: '3.00000' },
+                { x: '3.00000', y: '7.40000' },
+                { x: '4.50000', y: '0.02550', lz_weight: '2.00000' },
+                { x: '6.00000', y: '128.00000' },
+                { x: '7.00000', y: '0.00100' },
+                { x: '8.00000', y: '0.99900' },
+                { x: '9.00000', y: '350.00000' }
+            ];
+            assert.equal(actual.length, expected.length, 'Found correct number of items');
+            assert.deepStrictEqual(actual, expected, 'Specified items are present');
         });
     });
 });
