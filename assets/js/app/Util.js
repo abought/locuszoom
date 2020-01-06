@@ -14,7 +14,7 @@
 //  - Otherwise, don't coalesce (just continue traversing until a child is found)
 function coalesce_points(coords, x_field, y_field, xgap, xmin, xmax, ygap, ymin, ymax) {
     function _should_coalesce(c1, c2, min, max, gap) {
-        return Math.abs(c2 - c1) <= gap && c1 >= min && c2 <= max;
+        return Math.abs(c2 - c1) <= gap && c1 >= min && c1 <= max && c2 >= min && c2 <= max;
     }
 
     var new_coords = [];
@@ -33,10 +33,11 @@ function coalesce_points(coords, x_field, y_field, xgap, xmin, xmax, ygap, ymin,
             && _should_coalesce(last_y, current_y, ymin, ymax, ygap)) {
             // merge points, possibly adding other fields as required later
             new_coords.pop();
+            var weight = last_item.lz_weight || 1;
             item = {};
-            item[x_field] = (current_x - last_x) / 2;
-            item[y_field] = (current_y - last_y) / 2;
-            item.lz_weight = (last_item.lz_weight || 0) + 1; // Track number of points coalesced
+            item[x_field] = (current_x + last_x * weight) / (weight + 1);
+            item[y_field] = (current_y + last_y * weight) / (weight + 1);
+            item.lz_weight = weight + 1; // Track number of points coalesced
         }
         new_coords.push(item);
     });

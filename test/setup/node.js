@@ -6,7 +6,7 @@ var fs = require('fs');
 
 var files = require('../../files.js');
 
-global.assert = require('assert');
+global.assert = require('chai').assert;
 global.should = require('should');
 global.sinon = require('sinon');
 
