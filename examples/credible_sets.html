@@ -109,6 +109,31 @@
       }
 
       layout = LocusZoom.Layouts.get("plot", "association_credible_set", {state: initialState});
+      layout.panels.unshift({
+          id: 'bad_neighbor',
+          width: 800,
+          height: 50,
+          margin: {top: 1, bottom: 1, left: 50, right: 50},
+          data_layers: [
+              {
+                  id: 'bad_neighbor',
+                  type: 'bad_neighbor',
+                  x_axis: {
+                      field: 'position'
+                  },
+                  interaction: {
+                      drag_background_to_pan: true,
+                      scroll_to_zoom: true,
+                      x_linked: true
+                  },
+                  markers: [
+                      {position: 75236763},
+                      {position: 75252327},
+                  ],  // TODO: This is a hack: real panel should draw from real data, not hard-coded info
+
+              }
+          ]
+      });
       layout.dashboard = LocusZoom.Layouts.get("dashboard", "region_nav_plot");
       layout.dashboard.components.push(LocusZoom.Layouts.get('dashboard_components', 'ldlz2_pop_selector'));
 
