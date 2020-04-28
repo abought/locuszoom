@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css"/>
+
+    <!-- Necessary includes for LocusZoom.js -->
+    <script src="../dist/locuszoom.vendor.min.js" type="text/javascript"></script>
+    <script src="../dist/locuszoom.app.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="../dist/locuszoom.css" type="text/css"/>
+
+    <!-- Load tabix reader form a CDN  -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/tabix-reader@~1.0.0"
+            crossorigin="anonymous"></script>
+
+    <script src="js/bed_tracks.js" type="application/javascript"></script>
+
+    <title>LocusZoom.js ~ BED Tracks</title>
+
+    <style>
+      body {
+        background-color: #FAFAFA;
+        margin: 0px 20px;
+      }
+      img {
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <div class="container">
+
+      <h1 style="margin-top: 1em;"><strong>LocusZoom.js</strong></h1>
+
+      <h3 style="float: left; color: #777">BED Tracks Example</h3>
+      <h6 style="float: right;"><a href="../index.html">&lt; return home</a></h6>
+
+      <hr style="clear: both;">
+
+      <p>
+        Read annotations directly from an external BED track (tabix indexed), without needing to convert the data into
+        JSON or load via a remote API. The remote file server must enable some basic headers. For google cloud and s3 buckets, see:
+        See: https://docs.cancergenomicscloud.org/docs/enabling-cross-origin-resource-sharing-cors#CORS
+      </p>
+      <div id="plot" class="lz-container-responsive"></div>
+      <div id="text-sample"></div>
+
+      <hr>
+
+      <div class="row">
+        <footer style="text-align: center;">
+          &copy; Copyright 2020 <a href="https://github.com/statgen">The University of Michigan Center for Statistical Genetics</a><br>
+        </footer>
+      </div>
+
+      <script type="text/javascript">
+
+        // First demo: just load the data into a textbox
+        var dest = document.getElementById('text-sample');
+
+        var source = new TabixSource({
+            url_data: 'https://locuszoom.s3-us-west-2.amazonaws.com/DFF351CLP.bed.gz',
+            parser_func: function(line) { return line; }  // TODO: Here is where we would convert to JSON
+        });
+
+        source.getData({'chr': 'chr1', start: 84600, end: 753200})()
+            .then(function (data) {
+              console.log('Data fetched:', data);
+              dest.innerText = data;
+            });
+
+      </script>
+
+    </div>
+
+  </body>
+</html>
