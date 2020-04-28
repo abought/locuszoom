@@ -63,17 +63,31 @@
         // First demo: just load the data into a textbox
         var dest = document.getElementById('text-sample');
 
-        var source = new TabixSource({
-            url_data: 'https://locuszoom.s3-us-west-2.amazonaws.com/DFF351CLP.bed.gz',
-            parser_func: function(line) { return line; }  // TODO: Here is where we would convert to JSON
+        // Normally in LocusZoom, we create sources via configuration objects. Expose internals for testing.
+        var source = new TabixUrlSource({
+            // URL source requires
+            url_data: 'http://127.0.0.1:8080/DFF022FVS_sorted.bed.gz',
+            parser_func: function(line) {
+                // Here is where we convert the content of a specific BED file format to the desired JSON structure
+                var fields = line.split('\t');
+                var chrom = fields[0].replace('chr', '');
+                return {
+                    chrom: chrom,
+                    peak1: +fields[1],
+                    peak2: +fields[2],
+                    score: +fields[4],
+                    id: fields[3]
+                };
+            }
         });
 
-        source.getData({'chr': 'chr1', start: 84600, end: 753200})()
+        // In locuszoom, the source is almost never called this way; we are reaching into the internals to facilitate a
+        //    simple demo without a visualization.
+        source.getData({'chr': '1', start: 1070689, end: 1110097}, ['chrom', 'peak1', 'peak2', 'score', 'id'], ['chrom', 'peak1', 'peak2', 'score', 'id'])({})
             .then(function (data) {
               console.log('Data fetched:', data);
-              dest.innerText = data;
+              dest.innerText = JSON.stringify(data.body);
             });
-
       </script>
 
     </div>

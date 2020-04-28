@@ -4,7 +4,11 @@
  * Demonstrate the use of tabixed BED files to draw a new interval annotation track in LocusZoom
  */
 
-var TabixSource = LocusZoom.subclass(LocusZoom.Data.Source, {
+// eslint-disable-next-line no-unused-vars
+var TabixUrlSource = LocusZoom.subclass(LocusZoom.Data.Source, {
+    constructor: function (init) {
+        this.parseInit(init);
+    },
     parseInit: function (init) {
         // this.params = init.params; // Used to create a parser
         this.parser = init.parser_func;
