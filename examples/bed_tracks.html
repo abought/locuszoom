@@ -67,23 +67,38 @@
         var source = new TabixUrlSource({
             // URL source requires
             url_data: 'http://127.0.0.1:8080/DFF022FVS_sorted.bed.gz',
-            parser_func: function(line) {
+            parser_func: function(line, index) {
                 // Here is where we convert the content of a specific BED file format to the desired JSON structure
+
+                // In Parul's file, there are two entities- a cis regulatory element (the position column
+                //  used for tabix queries) and a promoter that affects a gene (a string column with an ID)
                 var fields = line.split('\t');
                 var chrom = fields[0].replace('chr', '');
+
+                // assume format chr1:123-456_GENE
+                var second_item = fields[3].match(/chr(\d+):(\d+)-(\d+)_(\w+)/);
                 return {
+                    // TODO: The query is based on position of element 1, not element 2. Tabix isn't very smart.
                     chrom: chrom,
-                    peak1: +fields[1],
-                    peak2: +fields[2],
+                    start1: +fields[1],
+                    end1: +fields[2],
+                    start2: +second_item[2],  // better start2 position
+                    end2: +second_item[3],
+                    gene2: second_item[4],
                     score: +fields[4],
-                    id: fields[3]
+                    gene: null,
+                    id: index,  // Dummy ID: position in the list of lines TODO: create a better unique ID
                 };
             }
         });
 
         // In locuszoom, the source is almost never called this way; we are reaching into the internals to facilitate a
         //    simple demo without a visualization.
-        source.getData({'chr': '1', start: 1070689, end: 1110097}, ['chrom', 'peak1', 'peak2', 'score', 'id'], ['chrom', 'peak1', 'peak2', 'score', 'id'])({})
+        source.getData(
+            { 'chr': '1', start: 1070689, end: 1110097 },
+            ['chrom', 'start1', 'start2', 'end1', 'end2', 'gene2', 'score', 'id'],
+            ['chrom', 'start1', 'start2', 'end1', 'end2', 'gene2', 'score', 'id']
+        )({})
             .then(function (data) {
               console.log('Data fetched:', data);
               dest.innerText = JSON.stringify(data.body);
