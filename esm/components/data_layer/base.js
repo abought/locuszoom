@@ -132,6 +132,15 @@ class BaseDataLayer {
          * @member {Array}
          */
         this.data = [];
+
+        /**
+         * Upon rendering, filters may optionally be applied, such that filtered data would be a subset
+         * All rendering operations (eg tooltips) should work on set of data actually in view.
+         * @type {Array}
+         * @private
+         */
+        this._filtered_data = this.data;
+
         if (this.layout.tooltip) {
             /**
              * @private
@@ -710,6 +719,9 @@ class BaseDataLayer {
         } else if (this.layout.filters) {
             data = data.filter(this.filter.bind(this, this.layout.filters));
         }
+
+        // Remember the result of the filtering operation so that all rendering can use it
+        this._filtered_data = data;
         return data;
     }
 
@@ -1145,7 +1157,7 @@ class BaseDataLayer {
 
         // Apply statuses
         if (toggle) {
-            this.data.forEach((element) => this.setElementStatus(status, element, true));
+            this._filtered_data.forEach((element) => this.setElementStatus(status, element, true));
         } else {
             const status_ids = this.layer_state.status_flags[status].slice();
             status_ids.forEach((id) => {
@@ -1330,6 +1342,7 @@ class BaseDataLayer {
         return this.parent_plot.lzd.getData(this.state, this.layout.fields)
             .then((new_data) => {
                 this.data = new_data.body;  // chain.body from datasources
+                this._filtered_data = this.data;
                 this.applyDataMethods();
                 this.initialized = true;
             });
