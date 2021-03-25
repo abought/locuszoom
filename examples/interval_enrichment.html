@@ -45,7 +45,7 @@
       </p>
       <div class="row">
         <div class="twelve columns">
-          <div id="plot" data-region="1:55499000-55530502"></div>
+          <div id="plot" data-region="10:114660006-114977437"></div>
         </div>
       </div>
 
@@ -69,16 +69,16 @@
       .add("gene", ["GeneLZ", { url: apiBase + "annotation/genes/", params: { build: 'GRCh37' } }])
       .add("recomb", ["RecombLZ", { url: apiBase + "annotation/recomb/results/", params: { build: 'GRCh37' } }])
       // There's no special transformation being done to intervals data- just fetch from a URL
-      .add("intervals", ["BaseApiAdapter", { url: 'data/intervals_enrichment_simplified.json' }])
+      .add("intervals", ["BaseApiAdapter", { url: 'data/intervals_enrichment_accessible_chromatin_tcf7l2.json' }])
       .add("constraint", ["GeneConstraintLZ", { url: "https://gnomad.broadinstitute.org/api/", params: { build: 'GRCh37' } }]);
 
     // Get the standard assocation plot layout from LocusZoom's built-in layouts
     const layout = LocusZoom.Layouts.get("plot", "intervals_association_enrichment");
 
     // In the demo, we use a static JSON file. Disable all pan and zoom interactions because there's no data out of range.
-    for (let panel of layout.panels) {
-        panel.interaction = {};
-    }
+    // for (let panel of layout.panels) {
+    //     panel.interaction = {};
+    // }
 
     // Generate the LocusZoom plot
     var plot = LocusZoom.populate("#plot", data_sources, layout);

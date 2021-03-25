@@ -157,7 +157,8 @@ function install(LocusZoom) {
         closable: true,
         show: { or: ['highlighted', 'selected'] },
         hide: { and: ['unhighlighted', 'unselected'] },
-        html: `<b>Tissue</b>: {{{{namespace[intervals]}}tissueId|htmlescape}}<br>
+        html: `<b>Tissue</b>: {{{{namespace[intervals]}}tissue|htmlescape}}<br>
+               <b>Ancestry</b>: {{{{namespace[intervals]}}ancestry|htmlescape}}<br>
                <b>Range</b>: {{{{namespace[intervals]}}chromosome|htmlescape}}: {{{{namespace[intervals]}}start|htmlescape}}-{{{{namespace[intervals]}}end|htmlescape}}<br>
                <b>-log10 p</b>: {{{{namespace[intervals]}}pValue|neglog10|scinotation|htmlescape}}<br>
                <b>Enrichment (n-fold)</b>: {{{{namespace[intervals]}}fold|scinotation|htmlescape}}`,
@@ -175,27 +176,28 @@ function install(LocusZoom) {
         namespace: { 'intervals': 'intervals' },
         id: 'intervals_enrichment',
         type: 'intervals_enrichment',
-        match: { send: '{{namespace[intervals]}}tissueId' },
-        fields: ['{{namespace[intervals]}}chromosome', '{{namespace[intervals]}}start', '{{namespace[intervals]}}end', '{{namespace[intervals]}}pValue', '{{namespace[intervals]}}fold', '{{namespace[intervals]}}tissueId', '{{namespace[intervals]}}ancestry'],
+        match: { send: '{{namespace[intervals]}}tissue' },
+        fields: ['{{namespace[intervals]}}chromosome', '{{namespace[intervals]}}start', '{{namespace[intervals]}}end', '{{namespace[intervals]}}pValue', '{{namespace[intervals]}}fold', '{{namespace[intervals]}}tissue', '{{namespace[intervals]}}ancestry'],
         id_field: '{{namespace[intervals]}}start', // not a good ID field for overlapping intervals
         start_field: '{{namespace[intervals]}}start',
         end_field: '{{namespace[intervals]}}end',
         filters: [
             { field: '{{namespace[intervals]}}ancestry', operator: '=', value: 'EU' },
-            { field: '{{namespace[intervals]}}pValue', operator: '<=', value: 0.05 },
-            { field: '{{namespace[intervals]}}fold', operator: '>', value: 2.0 },
+            // { field: '{{namespace[intervals]}}pValue', operator: '<=', value: 0.05 },
+            // { field: '{{namespace[intervals]}}fold', operator: '>', value: 2.0 },
+            // {field: '{{namespace[intervals]}}tissue', operator: '=', value: 'kidney' },
         ],
         y_axis: {
             axis: 1,
             field: '{{namespace[intervals]}}fold', // is this used for other than extent generation?
             floor: 0,
             upper_buffer: 0.10,
-            min_extent: [0, 10],
+            // min_extent: [0, 10],
         },
         fill_opacity: 0.5, // Many intervals overlap: show all, even if the ones below can't be clicked
         color: [
             {
-                field: '{{namespace[intervals]}}tissueId',
+                field: '{{namespace[intervals]}}tissue',
                 scale_function: 'stable_choice',
                 parameters: {
                     values: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'],
@@ -226,19 +228,19 @@ function install(LocusZoom) {
         id: 'interval_matches',
         type: 'highlight_regions',
         namespace: { intervals: 'intervals' },
-        match: { receive: '{{namespace[intervals]}}tissueId' },
-        fields: ['{{namespace[intervals]}}start', '{{namespace[intervals]}}end', '{{namespace[intervals]}}tissueId', '{{namespace[intervals]}}ancestry', '{{namespace[intervals]}}pValue', '{{namespace[intervals]}}fold'],
+        match: { receive: '{{namespace[intervals]}}tissue' },
+        fields: ['{{namespace[intervals]}}start', '{{namespace[intervals]}}end', '{{namespace[intervals]}}tissue', '{{namespace[intervals]}}ancestry', '{{namespace[intervals]}}pValue', '{{namespace[intervals]}}fold'],
         start_field: '{{namespace[intervals]}}start',
         end_field: '{{namespace[intervals]}}end',
-        merge_field: '{{namespace[intervals]}}tissueId',
+        merge_field: '{{namespace[intervals]}}tissue',
         filters: [
             { field: 'lz_is_match', operator: '=', value: true },
             { field: '{{namespace[intervals]}}ancestry', operator: '=', value: 'EU' },
-            { field: '{{namespace[intervals]}}pValue', operator: '<=', value: 0.05 },
-            { field: '{{namespace[intervals]}}fold', operator: '>', value: 2.0 },
+            // { field: '{{namespace[intervals]}}pValue', operator: '<=', value: 0.05 },
+            // { field: '{{namespace[intervals]}}fold', operator: '>', value: 2.0 },
         ],
         color: [{
-            field: '{{namespace[intervals]}}tissueId',
+            field: '{{namespace[intervals]}}tissue',
             scale_function: 'stable_choice',
             parameters: {
                 values: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'],

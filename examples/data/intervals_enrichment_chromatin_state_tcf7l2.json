@@ -1,0 +1,93 @@
+[
+  {
+    "chromosome": "10",
+    "start": 0,
+    "end": 135534600,
+    "annotation": "chromatin_state",
+    "tissue": "liver",
+    "SNPs": 1011,
+    "ancestry": "EU",
+    "expectedSNPs": 1010.97393872299,
+    "pValue": 2.14748386094645,
+    "phenotype": "T2D",
+    "fold": 1.0000257783865754
+  },
+  {
+    "chromosome": "10",
+    "start": 0,
+    "end": 135534600,
+    "annotation": "chromatin_state",
+    "tissue": "blood",
+    "SNPs": 1011,
+    "ancestry": "EU",
+    "expectedSNPs": 1010.98012034755,
+    "pValue": 2.38631668852637,
+    "phenotype": "T2D",
+    "fold": 1.000019663742194
+  },
+  {
+    "chromosome": "10",
+    "start": 0,
+    "end": 135534600,
+    "annotation": "chromatin_state",
+    "tissue": "gastrointestinal system",
+    "SNPs": 1011,
+    "ancestry": "EU",
+    "expectedSNPs": 1010.95703588504,
+    "pValue": 1.78311766927272,
+    "phenotype": "T2D",
+    "fold": 1.0000424984578324
+  },
+  {
+    "chromosome": "10",
+    "start": 0,
+    "end": 135534600,
+    "annotation": "chromatin_state",
+    "tissue": "lung",
+    "SNPs": 1011,
+    "ancestry": "EU",
+    "expectedSNPs": 1010.91514206863,
+    "pValue": 1.41300503418275,
+    "phenotype": "T2D",
+    "fold": 1.0000839416958345
+  },
+  {
+    "chromosome": "10",
+    "start": 0,
+    "end": 135534600,
+    "annotation": "chromatin_state",
+    "tissue": "mammary gland",
+    "SNPs": 1011,
+    "ancestry": "EU",
+    "expectedSNPs": 1010.90622719848,
+    "pValue": 1.36852259134667,
+    "phenotype": "T2D",
+    "fold": 1.0000927611275874
+  },
+  {
+    "chromosome": "10",
+    "start": 0,
+    "end": 135534600,
+    "annotation": "chromatin_state",
+    "tissue": "skin of body",
+    "SNPs": 1011,
+    "ancestry": "EU",
+    "expectedSNPs": 1010.95956562133,
+    "pValue": 1.82264593793823,
+    "phenotype": "T2D",
+    "fold": 1.000039996039451
+  },
+  {
+    "chromosome": "10",
+    "start": 114558000,
+    "end": 119136600,
+    "annotation": "chromatin_state",
+    "tissue": "stem cell",
+    "SNPs": 989,
+    "ancestry": "EA",
+    "expectedSNPs": 977.488233265214,
+    "pValue": 0.00646697851737811,
+    "phenotype": "T2D",
+    "fold": 1.0117768852278988
+  }
+]
