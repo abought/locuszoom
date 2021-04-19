@@ -249,6 +249,73 @@ function install(LocusZoom) {
         fill_opacity: 0.1,
     };
 
+    const enrichment_scatter_layer = {
+        namespace: { 'intervals': 'intervals' },
+        id: 'enrichment_scatter',
+        type: 'scatter',
+        fields: ['{{namespace[intervals]}}chromosome', '{{namespace[intervals]}}start', '{{namespace[intervals]}}end', '{{namespace[intervals]}}pValue', '{{namespace[intervals]}}fold', '{{namespace[intervals]}}tissue', '{{namespace[intervals]}}ancestry'],
+        id_field: '{{namespace[intervals]}}start',
+        match: { send: '{{namespace[intervals]}}tissue' },
+        filters: [
+            { field: '{{namespace[intervals]}}ancestry', operator: '=', value: 'EU' },
+        ],
+        point_size: 30,
+        color: [
+            {
+                field: '{{namespace[intervals]}}tissue',
+                scale_function: 'stable_choice',
+                parameters: {
+                    values: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'],
+                },
+            },
+        ],
+        x_axis: {
+            field: '{{namespace[intervals]}}pValue|neglog10',
+        },
+        y_axis: {
+            axis: 1,
+            field: '{{namespace[intervals]}}fold',
+            floor: 0,
+            upper_buffer: 0.10,
+            min_extent: [0, 2],
+        },
+        behaviors: {
+            onmouseover: [
+                { action: 'set', status: 'highlighted' },
+            ],
+            onmouseout: [
+                { action: 'unset', status: 'highlighted' },
+            ],
+            onclick: [
+                { action: 'toggle', status: 'selected', exclusive: true },
+            ],
+        },
+        tooltip: intervals_tooltip_layout,
+    };
+
+    const enrichment_scatter_panel = {
+        id: 'enrichment_scater',
+        min_height: 200,
+        height: 200,
+        margin: { top: 35, right: 50, bottom: 40, left: 50 },
+        inner_border: 'rgb(210, 210, 210)',
+        toolbar: LocusZoom.Layouts.get('toolbar', 'standard_panel'),
+        axes: {
+            x: {
+                label: '-log10 pvalue',
+                label_offset: 32,
+            },
+            y1: {
+                label: 'enrichment (n-fold)',
+                label_offset: 28,
+            },
+        },
+        interaction: {
+            x_linked: false,
+        },
+        data_layers: [enrichment_scatter_layer],
+    };
+
     /**
      * (**extension**) A panel containing an intervals-by-enrichment data layer
      * @alias module:LocusZoom_Layouts~intervals_enrichment_panel
@@ -307,6 +374,8 @@ function install(LocusZoom) {
             }(),
             intervals_panel_layout,
             LocusZoom.Layouts.get('panel', 'genes'),
+            enrichment_scatter_panel,
+
         ],
     };
 

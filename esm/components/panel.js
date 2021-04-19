@@ -113,6 +113,7 @@ class Panel {
      * @param {boolean} [layout.interaction.x_linked=false] Whether this panel should change regions to match all other linked panels
      * @param {boolean} [layout.interaction.y1_linked=false] Whether this panel should rescale to match all other linked panels
      * @param {boolean} [layout.interaction.y2_linked=false] Whether this panel should rescale to match all other linked panels
+     * @param {string} [layout.inner_border] If specified, draw an inner border of the specified stroke color for the data area (bounded by the margins)
      * @param {Plot|null} parent
      */
     constructor(layout, parent) {
